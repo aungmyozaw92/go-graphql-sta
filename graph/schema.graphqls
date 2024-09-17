@@ -1,0 +1,45 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+scalar Time
+scalar UUID
+scalar Decimal
+
+type GeneratedDummy {
+  name: String!
+}
+
+type User {
+  id: ID!
+  username: String!
+  name: String!
+  email: String
+  phone: String
+  mobile: String
+  imageUrl: String
+  isActive: Boolean!
+  roleId: Int
+  createdAt: Time
+  updatedAt: Time
+}
+
+input NewUser {
+  username: String!
+  name: String!
+  email: String
+  phone: String
+  mobile: String
+  imageUrl: String
+  isActive: Boolean!
+  password: String!
+  roleId: Int
+}
+
+type Query {
+  getUser(id: ID!): User!
+}
+
+type Mutation {
+  register(input: NewUser!): User!
+}
