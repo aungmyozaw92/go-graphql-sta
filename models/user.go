@@ -22,7 +22,6 @@ type User struct {
 	Password   string    `gorm:"size:255;not null" json:"password"`
 	IsActive   *bool     `gorm:"not null" json:"is_active"`
 	RoleId     int       `gorm:"not null;default:0" json:"role_id" binding:"required"`
-	// Role       UserRole  `gorm:"type:enum('A', 'O', 'C');default:C" json:"role"`
 	CreatedAt  time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt  time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
@@ -37,7 +36,6 @@ type NewUser struct {
 	Password   string   `json:"password"`
 	IsActive   *bool    `json:"is_active"`
 	RoleId     int      `json:"role_id"`
-	// Role       UserRole `json:"role"`
 }
 
 
