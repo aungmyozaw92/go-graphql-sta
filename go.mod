@@ -1,6 +1,6 @@
 module github.com/aungmyozaw92/go-graphql
 
-go 1.22
+go 1.22.5
 
 toolchain go1.22.7
 
