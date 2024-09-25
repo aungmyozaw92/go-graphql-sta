@@ -2,12 +2,30 @@
 #
 # https://gqlgen.com/getting-started/
 
+directive @goField(
+  forceResolver: Boolean
+  name: String
+) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+# new directive
+directive @auth on FIELD_DEFINITION
+
 scalar Time
 scalar UUID
 scalar Decimal
 
 type GeneratedDummy {
   name: String!
+}
+
+type LoginInfo {
+  token: String!
+  userId: Int!
+  username: String!
+  name: String!
+  email: String!
+  phone: String!
+  imageUrl: String!
 }
 
 type User {
@@ -37,9 +55,11 @@ input NewUser {
 }
 
 type Query {
-  getUser(id: ID!): User!
+  getUser(id: ID!): User! @goField(forceResolver: true) @auth
 }
 
 type Mutation {
   register(input: NewUser!): User!
+  login(username: String!, password: String!): LoginInfo!
+    @goField(forceResolver: true)
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/aungmyozaw92/go-graphql/config"
 	"github.com/aungmyozaw92/go-graphql/utils"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -38,9 +39,60 @@ type NewUser struct {
 	RoleId     int      `json:"role_id"`
 }
 
+type LoginInfo struct {
+	Token      string   `json:"token"`
+	UserId	   int      `json:"user_id"`
+	Username   string   `json:"username"`
+	Name       string   `json:"name"`
+	Email      string   `json:"email"`
+	Phone      string   `json:"phone"`
+	Mobile     string   `json:"mobile"`
+	ImageUrl   string   `json:"image_url"`
+}
+
 
 func (result *User) PrepareGive() {
 	result.Password = ""
+}
+
+
+func Login(ctx context.Context, username string, password string) (*LoginInfo, error) {
+
+	db := config.GetDB()
+	var err error
+	var result LoginInfo
+
+	u := User{}
+
+	err = db.WithContext(ctx).Model(User{}).Where("username = ?", username).Take(&u).Error
+
+	if err != nil {
+		return &result, errors.New("invalid username or password")
+	}
+	err = utils.ComparePassword(u.Password, password)
+
+	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
+		return &result, errors.New("invalid username or password")
+	}
+
+	isActive := *u.IsActive
+	if !isActive {
+		return &result, errors.New("user is disabled")
+	}
+	token, err := utils.JwtGenerate(u.ID)
+	result.Token = token
+	result.UserId = u.ID
+	result.Name = u.Name
+	result.Username = u.Username
+	result.Email = u.Email
+	result.Phone = u.Phone
+	result.ImageUrl = u.ImageUrl
+	
+	if err != nil {
+		return &result, err
+	}
+
+	return &result, nil
 }
 
 func CreateUser(ctx context.Context, input *NewUser) (*User, error) {

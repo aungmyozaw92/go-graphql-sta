@@ -15,6 +15,11 @@ func (r *mutationResolver) Register(ctx context.Context, input models.NewUser) (
 	return models.CreateUser(ctx, &input)
 }
 
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*models.LoginInfo, error) {
+	return models.Login(ctx, username, password)
+}
+
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id int) (*models.User, error) {
 	return models.GetUser(ctx, id)

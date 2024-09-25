@@ -6,14 +6,17 @@ toolchain go1.22.7
 
 require (
 	github.com/99designs/gqlgen v0.17.52
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/joho/godotenv v1.5.1
+	github.com/ravilushqa/otelgqlgen v0.17.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/ttacon/libphonenumber v1.2.1
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.3.1
 	github.com/vektah/gqlparser/v2 v2.5.16
-	go.opentelemetry.io/otel v1.27.0
+	go.opentelemetry.io/otel v1.29.0
+	go.opentelemetry.io/otel/trace v1.29.0
 	golang.org/x/crypto v0.27.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.10
@@ -58,8 +61,8 @@ require (
 	github.com/uptrace/opentelemetry-go-extra/otelsql v0.3.1 // indirect
 	github.com/urfave/cli/v2 v2.27.4 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect
-	go.opentelemetry.io/otel/metric v1.27.0 // indirect
-	go.opentelemetry.io/otel/trace v1.27.0 // indirect
+	go.opentelemetry.io/contrib v1.29.0 // indirect
+	go.opentelemetry.io/otel/metric v1.29.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/mod v0.20.0 // indirect
 	golang.org/x/net v0.29.0 // indirect

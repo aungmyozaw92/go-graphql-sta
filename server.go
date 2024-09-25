@@ -8,10 +8,13 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/aungmyozaw92/go-graphql/config"
+	"github.com/aungmyozaw92/go-graphql/directives"
 	"github.com/aungmyozaw92/go-graphql/graph"
+	"github.com/aungmyozaw92/go-graphql/middlewares"
 	"github.com/aungmyozaw92/go-graphql/models"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/ravilushqa/otelgqlgen"
 	"github.com/sirupsen/logrus"
 	"go.opentelemetry.io/otel"
 )
@@ -26,11 +29,14 @@ const apqPrefix = "apq:"
 func graphqlHandler() gin.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-
 	c := graph.Config{Resolvers: &graph.Resolver{
+		Tracer: tracer,
 	}}
+	
+	c.Directives.Auth = directives.Auth
 
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(c))
+	h.Use(otelgqlgen.Middleware())
 	
 	return func(c *gin.Context) {
 		h.ServeHTTP(c.Writer, c.Request)
@@ -70,7 +76,7 @@ func main() {
 	corsConfig.AllowCredentials = true
 
 	r.Use(cors.New(corsConfig))
-	// r.Use(middlewares.AuthMiddleware())
+	r.Use(middlewares.AuthMiddleware())
 	// r.Use(middlewares.SessionMiddleware())
 	// r.Use(middlewares.LoaderMiddleware())
 	r.Use(customErrorLogger(logger))
@@ -85,14 +91,6 @@ func main() {
 		"info": "Connection Established",
 	}).Info("connect to http://localhost:", port, "/ for GraphQL playground")
 	log.Println("Server started successfully")
-
-	// srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
-
-	// http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	// http.Handle("/query", srv)
-
-	// log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	// log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 // customErrorLogger is a custom Gin middleware that logs only errors
