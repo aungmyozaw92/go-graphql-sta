@@ -23,6 +23,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		auth = auth[len(bearer):]
 
 		validate, err := utils.JwtValidate(auth)
+
 		if err != nil || !validate.Valid {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 			c.Abort()
@@ -30,8 +31,9 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		customClaim, _ := validate.Claims.(*utils.JwtCustomClaim)
-
+		
 		ctx := context.WithValue(c.Request.Context(), authString("auth"), customClaim)
+		ctx = context.WithValue(ctx, utils.ContextKeyUserId, customClaim.ID)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}

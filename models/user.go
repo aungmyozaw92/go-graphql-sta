@@ -16,7 +16,7 @@ type User struct {
 	ID         int       `gorm:"primary_key" json:"id"`
 	Username   string    `gorm:"size:100;not null;unique" json:"username" binding:"required"`
 	Name       string    `gorm:"size:100;not null" json:"name" binding:"required"`
-	Email      string    `gorm:"size:100;unique" json:"email"`
+	Email      string    `gorm:"size:100;unique;default:null" json:"email"`
 	Phone      string    `gorm:"size:20" json:"phone"`
 	Mobile     string    `gorm:"size:20" json:"mobile"`
 	ImageUrl   string    `json:"image_url"`
@@ -87,7 +87,7 @@ func Login(ctx context.Context, username string, password string) (*LoginInfo, e
 	result.Email = u.Email
 	result.Phone = u.Phone
 	result.ImageUrl = u.ImageUrl
-	
+
 	if err != nil {
 		return &result, err
 	}
@@ -138,6 +138,100 @@ func CreateUser(ctx context.Context, input *NewUser) (*User, error) {
 	return &user, nil
 }
 
+
+func UpdateUser(ctx context.Context, id int, input *NewUser) (*User, error) {
+
+	db := config.GetDB()
+	var count int64
+
+	err := db.Model(&User{}).Where("id = ?", id).Count(&count).Error
+	if err != nil {
+		return &User{}, err
+	}
+	if count <= 0 {
+		return nil, errors.New("record not found")
+	}
+
+	if err = db.Model(&User{}).
+		Where("username = ? OR email = ?", input.Username, input.Email).
+		Not("id = ?", id).
+		Count(&count).Error; err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		return &User{}, errors.New("duplicate email or username")
+	}
+
+	// db action
+	var user User
+	if err := db.WithContext(ctx).First(&user, id).Error; err != nil {
+		return nil, err
+	}
+	err = db.WithContext(ctx).Model(&user).Updates(map[string]interface{}{
+		"Name": input.Name, 
+		"Email": input.Email, 
+		"Username": input.Username, 
+		"Phone": input.Phone, 
+		"Mobile": input.Mobile, 
+		"IsActive": input.IsActive,
+	}).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func DeleteUser(ctx context.Context, id int) (*User, error) {
+
+	db := config.GetDB()
+
+	var user User
+
+	err := db.WithContext(ctx).First(&user, id).Error
+	if err != nil {
+		return nil, errors.New("record not found")
+	}
+
+	err = db.Delete(&user).Error
+	if err != nil {
+		return &User{}, err
+	}
+	return &user, nil
+}
+
+func ChangePassword(ctx context.Context, oldPassword string, newPassword string) (*User, error) {
+	userId, ok := utils.GetUserIdFromContext(ctx)
+	if !ok || userId == 0 {
+		return nil, errors.New("user id is required")
+	}
+
+	var user User
+	db := config.GetDB()
+	if err := db.WithContext(ctx).First(&user, userId).Error; err != nil {
+		return nil, err
+	}
+	// check oldPassword
+	if err := utils.ComparePassword(user.Password, oldPassword); err != nil {
+		return nil, errors.New("old password is wrong")
+	}
+
+	//turn password into hash
+	hashedPassword, err := utils.HashPassword(newPassword)
+	if err != nil {
+		return nil, err
+	}
+	newPassword = string(hashedPassword)
+
+	tx := db.Begin()
+	if err := tx.WithContext(ctx).Model(&user).UpdateColumn("password", newPassword).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	
+	return &user, tx.Commit().Error
+}
+
 func GetUser(ctx context.Context, id int) (*User, error) {
 
 	db := config.GetDB()
@@ -152,4 +246,37 @@ func GetUser(ctx context.Context, id int) (*User, error) {
 	result.PrepareGive()
 
 	return &result, nil
+}
+
+func GetUsers(ctx context.Context,name *string, phone *string, mobile *string, email *string, isActive *bool) ([]*User, error) {
+
+	db := config.GetDB()
+	var results []*User
+
+	if name != nil && *name != "" {
+		db.Where("name LIKE ?", "%"+*name+"%")
+	}
+	if phone != nil && *phone != "" {
+		db.Where("phone LIKE ?", "%"+*phone+"%")
+	}
+	if mobile != nil && *mobile != "" {
+		db.Where("mobile LIKE ?", "%"+*mobile+"%")
+	}
+	if email != nil && *email != "" {
+		db.Where("email LIKE ?", "%"+*email+"%")
+	}
+	if isActive != nil {
+		db.Where("is_active = ?", isActive)
+	}
+
+	if err := db.WithContext(ctx).Find(&results).Error; err != nil {
+		return results, errors.New("no user")
+	}
+
+	for i, u := range results {
+		u.Password = ""
+		results[i] = u
+	}
+
+	return results, nil
 }

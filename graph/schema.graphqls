@@ -56,10 +56,28 @@ input NewUser {
 
 type Query {
   getUser(id: ID!): User! @goField(forceResolver: true) @auth
+  getUsers(
+    name: String
+    phone: String
+    mobile: String
+    email: String
+    isActive: Boolean
+  ): [User] @goField(forceResolver: true) @auth
 }
 
 type Mutation {
   register(input: NewUser!): User!
   login(username: String!, password: String!): LoginInfo!
     @goField(forceResolver: true)
+
+  #user module
+
+  createUser(input: NewUser!): User! @goField(forceResolver: true) @auth
+  updateUser(id: ID!, input: NewUser!): User!
+    @goField(forceResolver: true)
+    @auth
+  deleteUser(userId: ID!): User! @goField(forceResolver: true) @auth
+  changePassword(oldPassword: String!, newPassword: String!): User!
+    @goField(forceResolver: true)
+    @auth
 }
