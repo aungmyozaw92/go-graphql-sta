@@ -50,6 +50,11 @@ func (r *queryResolver) GetUsers(ctx context.Context, name *string, phone *strin
 	return models.GetUsers(ctx, name, phone, mobile, email, isActive)
 }
 
+// PaginateUser is the resolver for the paginateUser field.
+func (r *queryResolver) PaginateUser(ctx context.Context, limit *int, after *string, name *string, phone *string, mobile *string, email *string, isActive *bool) (*models.UsersConnection, error) {
+	return models.PaginateUser(ctx, limit, after, name, phone, mobile, email, isActive)
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 

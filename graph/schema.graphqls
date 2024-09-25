@@ -18,6 +18,12 @@ type GeneratedDummy {
   name: String!
 }
 
+type PageInfo {
+  startCursor: String!
+  endCursor: String!
+  hasNextPage: Boolean!
+}
+
 type LoginInfo {
   token: String!
   userId: Int!
@@ -26,6 +32,16 @@ type LoginInfo {
   email: String!
   phone: String!
   imageUrl: String!
+}
+
+type UsersConnection {
+  edges: [UsersEdge!]!
+  pageInfo: PageInfo!
+}
+
+type UsersEdge {
+  cursor: String!
+  node: User
 }
 
 type User {
@@ -56,6 +72,7 @@ input NewUser {
 
 type Query {
   getUser(id: ID!): User! @goField(forceResolver: true) @auth
+
   getUsers(
     name: String
     phone: String
@@ -63,6 +80,16 @@ type Query {
     email: String
     isActive: Boolean
   ): [User] @goField(forceResolver: true) @auth
+
+  paginateUser(
+    limit: Int = 10
+    after: String
+    name: String
+    phone: String
+    mobile: String
+    email: String
+    isActive: Boolean
+  ): UsersConnection @goField(forceResolver: true) @auth
 }
 
 type Mutation {

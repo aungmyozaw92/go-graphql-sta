@@ -50,9 +50,21 @@ type LoginInfo struct {
 	ImageUrl   string   `json:"image_url"`
 }
 
-
 func (result *User) PrepareGive() {
 	result.Password = ""
+}
+
+type UsersEdge Edge[User]
+
+type UsersConnection struct {
+	PageInfo 	*PageInfo    	`json:"pageInfo"`
+	Edges    	[]*UsersEdge 	`json:"edges"`
+}
+
+// node
+// returns decoded curosr string
+func (s User) GetCursor() string {
+	return s.CreatedAt.String()
 }
 
 
@@ -279,4 +291,43 @@ func GetUsers(ctx context.Context,name *string, phone *string, mobile *string, e
 	}
 
 	return results, nil
+}
+
+
+func PaginateUser(ctx context.Context, limit *int, after *string,
+	name *string, phone *string, mobile *string, email *string, isActive *bool) (*UsersConnection, error) {
+	
+
+	db := config.GetDB()
+
+	if name != nil && *name != "" {
+		db.Where("name LIKE ?", "%"+*name+"%")
+	}
+	if phone != nil && *phone != "" {
+		db.Where("phone LIKE ?", "%"+*phone+"%")
+	}
+	if mobile != nil && *mobile != "" {
+		db.Where("mobile LIKE ?", "%"+*mobile+"%")
+	}
+	if email != nil && *email != "" {
+		db.Where("email LIKE ?", "%"+*email+"%")
+	}
+	if isActive != nil {
+		db.Where("is_active = ?", isActive)
+	}
+
+	edges, pageInfo, err := FetchPageCompositeCursor[User](db, *limit, after, "created_at", ">")
+	if err != nil {
+		return nil, err
+	}
+
+	var usersConnection UsersConnection
+
+	usersConnection.PageInfo = pageInfo
+	
+	for _, edge := range edges {
+		userEdge := UsersEdge(edge)
+		usersConnection.Edges = append(usersConnection.Edges, &userEdge)
+	}
+	return &usersConnection, err
 }
