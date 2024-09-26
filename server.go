@@ -7,6 +7,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/aungmyozaw92/go-graphql/cmd"
 	"github.com/aungmyozaw92/go-graphql/config"
 	"github.com/aungmyozaw92/go-graphql/directives"
 	"github.com/aungmyozaw92/go-graphql/graph"
@@ -57,6 +58,8 @@ func main() {
 	if port == "" {
 		port = defaultPort
 	}
+
+    cmd.Execute()
 
 	logger := config.GetLogger()
 

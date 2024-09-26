@@ -11,6 +11,9 @@ func MigrateTable() {
 
 	err := db.AutoMigrate(
 		&User{},
+		&Role{},
+		&Module{},
+		&RoleModule{},
 	)
 	if err != nil {
 		log.Fatal(err)
