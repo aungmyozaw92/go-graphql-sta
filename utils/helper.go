@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"regexp"
+	"unicode"
 
 	"github.com/ttacon/libphonenumber"
 )
@@ -15,6 +16,23 @@ func NewTrue() *bool {
 func NewFalse() *bool {
 	b := false
 	return &b
+}
+
+// turn salesInvoice to SalesInvoice
+func UppercaseFirst(s string) string {
+	runes := []rune(s)
+	runes[0] = unicode.ToUpper(runes[0])
+	return string(runes)
+}
+
+// turn ToggleActive to toggleActive
+func LowercaseFirst(s string) string {
+	if s == "" {
+		return ""
+	}
+	runes := []rune(s)
+	runes[0] = unicode.ToLower(runes[0])
+	return string(runes)
 }
 
 var CountryCode = "MM"

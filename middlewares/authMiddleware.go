@@ -34,6 +34,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		
 		ctx := context.WithValue(c.Request.Context(), authString("auth"), customClaim)
 		ctx = context.WithValue(ctx, utils.ContextKeyUserId, customClaim.ID)
+		ctx = context.WithValue(ctx, utils.ContextKeyToken, auth)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
