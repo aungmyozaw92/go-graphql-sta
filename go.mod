@@ -9,9 +9,11 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
+	github.com/graph-gophers/dataloader/v7 v7.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/ravilushqa/otelgqlgen v0.17.0
 	github.com/sirupsen/logrus v1.9.3
+	github.com/spf13/cobra v1.8.1
 	github.com/ttacon/libphonenumber v1.2.1
 	github.com/uptrace/opentelemetry-go-extra/otelgorm v0.3.1
 	github.com/vektah/gqlparser/v2 v2.5.16
@@ -56,7 +58,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sosodev/duration v1.3.1 // indirect
-	github.com/spf13/cobra v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/ttacon/builder v0.0.0-20170518171403-c099f663e1c2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

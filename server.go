@@ -80,8 +80,7 @@ func main() {
 
 	r.Use(cors.New(corsConfig))
 	r.Use(middlewares.AuthMiddleware())
-	// r.Use(middlewares.SessionMiddleware())
-	// r.Use(middlewares.LoaderMiddleware())
+	r.Use(middlewares.LoaderMiddleware())
 	r.Use(customErrorLogger(logger))
 	r.Use(gin.Recovery())
 	r.POST("/query", graphqlHandler())

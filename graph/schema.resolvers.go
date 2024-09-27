@@ -7,6 +7,7 @@ package graph
 import (
 	"context"
 
+	"github.com/aungmyozaw92/go-graphql/middlewares"
 	"github.com/aungmyozaw92/go-graphql/models"
 )
 
@@ -55,11 +56,20 @@ func (r *queryResolver) PaginateUser(ctx context.Context, limit *int, after *str
 	return models.PaginateUser(ctx, limit, after, name, phone, mobile, email, isActive)
 }
 
+// Role is the resolver for the role field.
+func (r *userResolver) Role(ctx context.Context, obj *models.User) (*models.Role, error) {
+	return middlewares.GetRole(ctx, obj.RoleId)
+}
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// User returns UserResolver implementation.
+func (r *Resolver) User() UserResolver { return &userResolver{r} }
+
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }

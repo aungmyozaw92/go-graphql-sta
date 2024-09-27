@@ -54,6 +54,7 @@ type User {
   imageUrl: String
   isActive: Boolean!
   roleId: Int
+  role: Role
   createdAt: Time
   updatedAt: Time
 }
@@ -68,6 +69,13 @@ input NewUser {
   isActive: Boolean!
   password: String!
   roleId: Int
+}
+
+type Role {
+  id: ID!
+  name: String!
+  createdAt: Time
+  updatedAt: Time
 }
 
 type Query {
