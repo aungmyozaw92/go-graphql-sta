@@ -21,6 +21,11 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	return models.Login(ctx, username, password)
 }
 
+// Logout is the resolver for the logout field.
+func (r *mutationResolver) Logout(ctx context.Context) (bool, error) {
+	return models.Logout(ctx)
+}
+
 // CreateUser is the resolver for the createUser field.
 func (r *mutationResolver) CreateUser(ctx context.Context, input models.NewUser) (*models.User, error) {
 	return models.CreateUser(ctx, &input)
@@ -41,6 +46,21 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	return models.ChangePassword(ctx, oldPassword, newPassword)
 }
 
+// CreateModule is the resolver for the createModule field.
+func (r *mutationResolver) CreateModule(ctx context.Context, input models.NewModule) (*models.Module, error) {
+	return models.CreateModule(ctx, &input)
+}
+
+// UpdateModule is the resolver for the updateModule field.
+func (r *mutationResolver) UpdateModule(ctx context.Context, id int, input models.NewModule) (*models.Module, error) {
+	return models.UpdateModule(ctx, id, &input)
+}
+
+// DeleteModule is the resolver for the deleteModule field.
+func (r *mutationResolver) DeleteModule(ctx context.Context, id int) (*models.Module, error) {
+	return models.DeleteModule(ctx, id)
+}
+
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id int) (*models.User, error) {
 	return models.GetUser(ctx, id)
@@ -54,6 +74,16 @@ func (r *queryResolver) GetUsers(ctx context.Context, name *string, phone *strin
 // PaginateUser is the resolver for the paginateUser field.
 func (r *queryResolver) PaginateUser(ctx context.Context, limit *int, after *string, name *string, phone *string, mobile *string, email *string, isActive *bool) (*models.UsersConnection, error) {
 	return models.PaginateUser(ctx, limit, after, name, phone, mobile, email, isActive)
+}
+
+// GetModule is the resolver for the getModule field.
+func (r *queryResolver) GetModule(ctx context.Context, id int) (*models.Module, error) {
+	return models.GetModule(ctx, id)
+}
+
+// GetModules is the resolver for the getModules field.
+func (r *queryResolver) GetModules(ctx context.Context, name *string) ([]*models.Module, error) {
+	return models.GetModules(ctx, name)
 }
 
 // Role is the resolver for the role field.

@@ -60,8 +60,7 @@ func GetQueryPathsFromRole(ctx context.Context, roleId int) (map[string]bool, er
 				switch action {
 				case "read":
 					allowedPaths["get"+module] = true
-					allowedPaths["list"+module] = true
-					allowedPaths["listAll"+module] = true
+					allowedPaths["get"+module+"s"] = true
 					allowedPaths["paginate"+module] = true
 				case "update":
 					allowedPaths["update"+module] = true

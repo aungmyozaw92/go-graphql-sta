@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"time"
@@ -63,13 +62,25 @@ func initConfig() *gorm.Config {
 
 // InitLog Connection Log Configuration
 func initLog() logger.Interface {
-	f, _ := os.Create("gorm.log")
-	newLogger := logger.New(log.New(io.MultiWriter(f), "\r\n", log.LstdFlags), logger.Config{
-		Colorful:      true,
-		LogLevel:      logger.Error,
-		SlowThreshold: time.Second,
-	})
+
+	// Open or create the gorm.log file
+	logFile, err := os.OpenFile("gorm.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatalf("Failed to create gorm.log: %v", err)
+	}
+
+	// Configure GORM logger to write only to gorm.log
+	newLogger := logger.New(
+		log.New(logFile, "\r\n", log.LstdFlags), // Output only to gorm.log
+		logger.Config{
+			SlowThreshold: time.Second,   // Log queries that take more than 1 second
+			LogLevel:      logger.Info,   // Log level: Info (adjust if needed)
+			Colorful:      false,         // Disable colorization (since it's logging to file)
+		},
+	)
+
 	return newLogger
+
 	// newLogger := logger.New(
 	// 	log.New(os.Stdout, "\r\n", log.LstdFlags), // Output to standard output
 	// 	logger.Config{

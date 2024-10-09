@@ -1,11 +1,7 @@
 package utils
 
 import (
-	"fmt"
-	"regexp"
 	"unicode"
-
-	"github.com/ttacon/libphonenumber"
 )
 
 func NewTrue() *bool {
@@ -35,25 +31,18 @@ func LowercaseFirst(s string) string {
 	return string(runes)
 }
 
+// returns slice removing duplicate elements
+func UniqueSlice[T comparable](slice []T) []T {
+	inResult := make(map[T]bool)
+	var result []T
+	for _, elm := range slice {
+		if _, ok := inResult[elm]; !ok {
+			// if not exists in map, append it, otherwise do nothing
+			inResult[elm] = true
+			result = append(result, elm)
+		}
+	}
+	return result
+}
+
 var CountryCode = "MM"
-
-func IsValidEmail(email string) bool {
-	// Basic email validation regex pattern
-	pattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	regex := regexp.MustCompile(pattern)
-	return regex.MatchString(email)
-}
-
-
-func ValidatePhoneNumber(phoneNumber, countryCode string) error {
-	p, err := libphonenumber.Parse(phoneNumber, countryCode)
-	if err != nil {
-		return err // Phone number is invalid
-	}
-
-	if !libphonenumber.IsValidNumber(p) {
-		return fmt.Errorf("phone number is not valid")
-	}
-
-	return nil // Phone number is valid for the specified country code
-}

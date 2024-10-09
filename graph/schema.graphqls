@@ -29,9 +29,15 @@ type LoginInfo {
   userId: Int!
   username: String!
   name: String!
-  email: String!
-  phone: String!
+  email: String
+  phone: String
   imageUrl: String!
+  modules: [AllowedModule!]!
+}
+
+type AllowedModule {
+  moduleName: String!
+  allowedActions: String!
 }
 
 type UsersConnection {
@@ -78,6 +84,19 @@ type Role {
   updatedAt: Time
 }
 
+type Module {
+  id: ID!
+  name: String!
+  actions: String!
+  createdAt: Time
+  updatedAt: Time
+}
+
+input NewModule {
+  name: String!
+  actions: String!
+}
+
 type Query {
   getUser(id: ID!): User! @goField(forceResolver: true) @auth
 
@@ -98,12 +117,18 @@ type Query {
     email: String
     isActive: Boolean
   ): UsersConnection @goField(forceResolver: true) @auth
+
+  #module
+
+  getModule(id: ID!): Module! @goField(forceResolver: true) @auth
+  getModules(name: String): [Module] @goField(forceResolver: true) @auth
 }
 
 type Mutation {
   register(input: NewUser!): User!
   login(username: String!, password: String!): LoginInfo!
     @goField(forceResolver: true)
+  logout: Boolean! @goField(forceResolver: true) @auth
 
   #user module
 
@@ -115,4 +140,11 @@ type Mutation {
   changePassword(oldPassword: String!, newPassword: String!): User!
     @goField(forceResolver: true)
     @auth
+
+  #module
+  createModule(input: NewModule!): Module! @goField(forceResolver: true) @auth
+  updateModule(id: ID!, input: NewModule!): Module!
+    @goField(forceResolver: true)
+    @auth
+  deleteModule(id: ID!): Module! @goField(forceResolver: true) @auth
 }
