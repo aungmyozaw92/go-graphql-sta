@@ -10,6 +10,11 @@ import (
 	"github.com/aungmyozaw92/go-graphql/config"
 )
 
+// remove AllowedPaths:Role:id
+func ClearPathsCache(roleId int) error {
+	return config.RemoveRedisKey("AllowedPaths:Role:" + fmt.Sprint(roleId))
+}
+
 func GetCacheLifespan() time.Duration {
 	lifespan, err := strconv.Atoi(os.Getenv("CACHE_LIFESPAN"))
 	if err != nil {

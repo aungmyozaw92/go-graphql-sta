@@ -17,6 +17,74 @@ type Edge[N Cursor] struct {
 	Cursor string
 }
 
+
+// fetch results for pagination
+func FetchPagePureCursor[T Cursor](dbCtx *gorm.DB,
+	limit int,
+	after *string,
+	cursorColumn string,
+	cmpOperator string,
+) ([]Edge[T], *PageInfo, error) {
+
+	nodes := make([]*T, 0)
+
+	// order
+	if cmpOperator == ">" {
+		dbCtx.Order(cursorColumn)
+	} else if cmpOperator == "<" {
+		dbCtx.Order(cursorColumn + " DESC")
+	}
+
+	// filter
+	decodedCursor, err := DecodeCursor(after)
+	if err != nil {
+		return nil, nil, err
+	}
+	if decodedCursor != "" {
+		dbCtx.Where(cursorColumn+" "+cmpOperator+" ?", decodedCursor)
+	}
+
+	// db query
+	dbCtx.Limit(limit + 1)
+	if err = dbCtx.Find(&nodes).Error; err != nil {
+		return nil, nil, err
+	}
+
+	/*
+		constructing edges & page info
+	*/
+	count := 0
+	hasNextPage := false
+	edges := make([]Edge[T], 0, len(nodes))
+	for _, node := range nodes {
+		if count == limit {
+			hasNextPage = true
+		}
+		if count < limit {
+			var edge Edge[T]
+			edge.Node = node
+			edge.Cursor = EncodeCursor((*node).GetCursor())
+			edges = append(edges, edge)
+			count++
+		}
+	}
+
+	pageInfo := PageInfo{
+		StartCursor: "",
+		EndCursor:   "",
+		HasNextPage: utils.NewFalse(),
+	}
+	if count > 0 {
+		pageInfo = PageInfo{
+			StartCursor: edges[0].Cursor,
+			EndCursor:   edges[count-1].Cursor,
+			HasNextPage: &hasNextPage,
+		}
+	}
+
+	return edges, &pageInfo, nil
+}
+
 type CompositeCursor interface {
 	Cursor
 	Identifier

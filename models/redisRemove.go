@@ -31,3 +31,17 @@ func (obj Module) RemoveAllRedis() error {
 	}
 	return nil
 }
+
+func (obj Unit) RemoveInstanceRedis() error {
+	if err := utils.RemoveRedisItem[Unit](obj.ID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (obj Unit) RemoveAllRedis() error {
+	if err := utils.RemoveRedisList[Unit](); err != nil {
+		return err
+	}
+	return nil
+}

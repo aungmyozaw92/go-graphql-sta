@@ -9,6 +9,7 @@ import (
 
 	"github.com/aungmyozaw92/go-graphql/config"
 	"github.com/aungmyozaw92/go-graphql/utils"
+	"gorm.io/gorm"
 )
 
 type Role struct {
@@ -131,7 +132,98 @@ func CreateRole(ctx context.Context, input *NewRole) (*Role, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// remove Cache for Role in Redis 
+	if err := utils.RemoveRedisList[Role](); err != nil {
+		return nil, err
+	}
+
 	return &role, nil
+}
+
+
+func UpdateRole(ctx context.Context, id int, input *NewRole) (*Role, error) {
+
+	// check role exists
+	if err := utils.ValidateResourceId[Role](ctx, id); err != nil {
+		return nil, err
+	}
+
+	// check duplicate
+	if err := utils.ValidateUnique[Role](ctx, "name", input.Name, id); err != nil {
+		return nil, err
+	}
+	roleModules, err := mapRoleModules(ctx, input.AllowedModules)
+	if err != nil {
+		return nil, err
+	}
+
+	role := Role{
+		ID:         id,
+		Name:       input.Name,
+	}
+
+	db := config.GetDB()
+	tx := db.Begin()
+
+	// full replace, delete excluded
+	err = tx.WithContext(ctx).Model(&role).
+		Session(&gorm.Session{FullSaveAssociations: true, SkipHooks: true}).
+		Association("RoleModules").Unscoped().Replace(roleModules)
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	err = tx.WithContext(ctx).Model(&role).Updates(map[string]interface{}{
+		"Name": input.Name,
+	}).Error
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	// caching
+	if err := utils.ClearPathsCache(id); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return &role, tx.Commit().Error
+}
+
+func DeleteRole(ctx context.Context, id int) (*Role, error) {
+
+	var role Role
+	db := config.GetDB()
+	
+	err := db.WithContext(ctx).First(&role, id).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// don't allow if a user is using the role
+	count, err := utils.ResourceCountWhere[User](ctx, "role_id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		return nil, errors.New("role has been used")
+	}
+
+	tx := db.Begin()
+	// delete role
+	err = tx.WithContext(ctx).Select("RoleModules").Delete(&role).Error
+	if err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// remove from redis
+	// caching
+	if err := utils.ClearPathsCache(id); err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	return &role, tx.Commit().Error
 }
 
 func GetRole(ctx context.Context, id int) (*Role, error) {

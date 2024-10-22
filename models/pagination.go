@@ -13,6 +13,19 @@ type PageInfo struct {
 	HasNextPage *bool  `json:"hasNextPage,omitempty"`
 }
 
+
+func DecodeCursor(cursor *string) (string, error) {
+	decodedCursor := ""
+	if cursor != nil {
+		b, err := base64.StdEncoding.DecodeString(*cursor)
+		if err != nil {
+			return decodedCursor, err
+		}
+		decodedCursor = string(b)
+	}
+	return decodedCursor, nil
+}
+
 func DecodeCompositeCursor(cursor *string) (string, int) {
 	if cursor == nil || *cursor == "" {
 		return "", 0
@@ -34,6 +47,11 @@ func DecodeCompositeCursor(cursor *string) (string, int) {
 	}
 
 	return parts[0], id
+}
+
+func EncodeCursor(cursor string) string {
+	return base64.StdEncoding.EncodeToString([]byte(cursor))
+	// return cursor
 }
 
 func EncodeCompositeCursor(transactionDateTime string, id int) string {

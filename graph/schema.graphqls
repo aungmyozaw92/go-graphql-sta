@@ -13,6 +13,7 @@ directive @auth on FIELD_DEFINITION
 scalar Time
 scalar UUID
 scalar Decimal
+scalar Precision
 
 type GeneratedDummy {
   name: String!
@@ -122,6 +123,32 @@ input NewModule {
   actions: String!
 }
 
+type UnitsConnection {
+  edges: [UnitsEdge!]!
+  pageInfo: PageInfo!
+}
+
+type UnitsEdge {
+  cursor: String!
+  node: Unit
+}
+
+type Unit {
+  id: ID!
+  name: String!
+  abbreviation: String!
+  precision: Precision!
+  isActive: Boolean!
+  createdAt: Time
+  updatedAt: Time
+}
+
+input NewUnit {
+  name: String!
+  abbreviation: String!
+  precision: Precision!
+}
+
 type Query {
   getUser(id: ID!): User! @goField(forceResolver: true) @auth
 
@@ -144,7 +171,6 @@ type Query {
   ): UsersConnection @goField(forceResolver: true) @auth
 
   #module
-
   getModule(id: ID!): Module! @goField(forceResolver: true) @auth
   getModules(name: String): [Module] @goField(forceResolver: true) @auth
 
@@ -152,6 +178,13 @@ type Query {
   getRole(id: ID!): Role! @goField(forceResolver: true) @auth
   getRoles(name: String): [Role] @goField(forceResolver: true) @auth
   listRoleModule(roleId: ID): [RoleModule] @goField(forceResolver: true) @auth
+
+  # Unit
+  getUnit(id: ID!): Unit! @goField(forceResolver: true) @auth
+  getUnits(name: String): [Unit] @goField(forceResolver: true) @auth
+  paginateUnit(limit: Int = 10, after: String, name: String): UnitsConnection
+    @goField(forceResolver: true)
+    @auth
 }
 
 type Mutation {
@@ -172,7 +205,6 @@ type Mutation {
     @auth
 
   #role module
-
   createRole(input: NewRole!): Role! @goField(forceResolver: true) @auth
   updateRole(id: ID!, input: NewRole!): Role!
     @goField(forceResolver: true)
@@ -185,4 +217,14 @@ type Mutation {
     @goField(forceResolver: true)
     @auth
   deleteModule(id: ID!): Module! @goField(forceResolver: true) @auth
+
+  #Unit
+  createUnit(input: NewUnit!): Unit! @goField(forceResolver: true) @auth
+  updateUnit(id: ID!, input: NewUnit!): Unit!
+    @goField(forceResolver: true)
+    @auth
+  deleteUnit(id: ID!): Unit! @goField(forceResolver: true) @auth
+  toggleActiveUnit(id: ID!, isActive: Boolean!): Unit!
+    @goField(forceResolver: true)
+    @auth
 }

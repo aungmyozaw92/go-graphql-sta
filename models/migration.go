@@ -14,6 +14,7 @@ func MigrateTable() {
 		&Role{},
 		&Module{},
 		&RoleModule{},
+		&Unit{},
 	)
 	if err != nil {
 		log.Fatal(err)

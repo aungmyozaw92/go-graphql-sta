@@ -13,3 +13,7 @@ type Data interface {
 func (user User) GetId() int {
 	return user.ID
 }
+
+func (unit Unit) GetId() int {
+	return unit.ID
+}

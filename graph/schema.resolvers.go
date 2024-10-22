@@ -54,12 +54,12 @@ func (r *mutationResolver) CreateRole(ctx context.Context, input models.NewRole)
 
 // UpdateRole is the resolver for the updateRole field.
 func (r *mutationResolver) UpdateRole(ctx context.Context, id int, input models.NewRole) (*models.Role, error) {
-	panic(fmt.Errorf("not implemented: UpdateRole - updateRole"))
+	return models.UpdateRole(ctx, id, &input)
 }
 
 // DeleteRole is the resolver for the deleteRole field.
 func (r *mutationResolver) DeleteRole(ctx context.Context, id int) (*models.Role, error) {
-	panic(fmt.Errorf("not implemented: DeleteRole - deleteRole"))
+	return models.DeleteRole(ctx, id)
 }
 
 // CreateModule is the resolver for the createModule field.
@@ -75,6 +75,26 @@ func (r *mutationResolver) UpdateModule(ctx context.Context, id int, input model
 // DeleteModule is the resolver for the deleteModule field.
 func (r *mutationResolver) DeleteModule(ctx context.Context, id int) (*models.Module, error) {
 	return models.DeleteModule(ctx, id)
+}
+
+// CreateUnit is the resolver for the createUnit field.
+func (r *mutationResolver) CreateUnit(ctx context.Context, input models.NewUnit) (*models.Unit, error) {
+	return models.CreateUnit(ctx, &input)
+}
+
+// UpdateUnit is the resolver for the updateUnit field.
+func (r *mutationResolver) UpdateUnit(ctx context.Context, id int, input models.NewUnit) (*models.Unit, error) {
+	return models.UpdateUnit(ctx, id, &input)
+}
+
+// DeleteUnit is the resolver for the deleteUnit field.
+func (r *mutationResolver) DeleteUnit(ctx context.Context, id int) (*models.Unit, error) {
+	return models.DeleteUnit(ctx, id)
+}
+
+// ToggleActiveUnit is the resolver for the toggleActiveUnit field.
+func (r *mutationResolver) ToggleActiveUnit(ctx context.Context, id int, isActive bool) (*models.Unit, error) {
+	return models.ToggleActiveUnit(ctx, id, isActive)
 }
 
 // GetUser is the resolver for the getUser field.
@@ -115,6 +135,21 @@ func (r *queryResolver) GetRoles(ctx context.Context, name *string) ([]*models.R
 // ListRoleModule is the resolver for the listRoleModule field.
 func (r *queryResolver) ListRoleModule(ctx context.Context, roleID *int) ([]*models.RoleModule, error) {
 	panic(fmt.Errorf("not implemented: ListRoleModule - listRoleModule"))
+}
+
+// GetUnit is the resolver for the getUnit field.
+func (r *queryResolver) GetUnit(ctx context.Context, id int) (*models.Unit, error) {
+	return models.GetUnit(ctx, id)
+}
+
+// GetUnits is the resolver for the getUnits field.
+func (r *queryResolver) GetUnits(ctx context.Context, name *string) ([]*models.Unit, error) {
+	return models.GetUnits(ctx, name)
+}
+
+// PaginateUnit is the resolver for the paginateUnit field.
+func (r *queryResolver) PaginateUnit(ctx context.Context, limit *int, after *string, name *string) (*models.UnitsConnection, error) {
+	return models.PaginateUnit(ctx, limit, after, name)
 }
 
 // RoleModules is the resolver for the roleModules field.
