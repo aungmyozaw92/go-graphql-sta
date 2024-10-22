@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/aungmyozaw92/go-graphql/middlewares"
 	"github.com/aungmyozaw92/go-graphql/models"
@@ -44,6 +45,21 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, userID int) (*models.
 // ChangePassword is the resolver for the changePassword field.
 func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword string, newPassword string) (*models.User, error) {
 	return models.ChangePassword(ctx, oldPassword, newPassword)
+}
+
+// CreateRole is the resolver for the createRole field.
+func (r *mutationResolver) CreateRole(ctx context.Context, input models.NewRole) (*models.Role, error) {
+	return models.CreateRole(ctx, &input)
+}
+
+// UpdateRole is the resolver for the updateRole field.
+func (r *mutationResolver) UpdateRole(ctx context.Context, id int, input models.NewRole) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: UpdateRole - updateRole"))
+}
+
+// DeleteRole is the resolver for the deleteRole field.
+func (r *mutationResolver) DeleteRole(ctx context.Context, id int) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: DeleteRole - deleteRole"))
 }
 
 // CreateModule is the resolver for the createModule field.
@@ -86,6 +102,36 @@ func (r *queryResolver) GetModules(ctx context.Context, name *string) ([]*models
 	return models.GetModules(ctx, name)
 }
 
+// GetRole is the resolver for the getRole field.
+func (r *queryResolver) GetRole(ctx context.Context, id int) (*models.Role, error) {
+	return models.GetRole(ctx, id)
+}
+
+// GetRoles is the resolver for the getRoles field.
+func (r *queryResolver) GetRoles(ctx context.Context, name *string) ([]*models.Role, error) {
+	return models.GetRoles(ctx, name)
+}
+
+// ListRoleModule is the resolver for the listRoleModule field.
+func (r *queryResolver) ListRoleModule(ctx context.Context, roleID *int) ([]*models.RoleModule, error) {
+	panic(fmt.Errorf("not implemented: ListRoleModule - listRoleModule"))
+}
+
+// RoleModules is the resolver for the roleModules field.
+func (r *roleResolver) RoleModules(ctx context.Context, obj *models.Role) ([]*models.RoleModule, error) {
+	panic(fmt.Errorf("not implemented: RoleModules - roleModules"))
+}
+
+// Role is the resolver for the role field.
+func (r *roleModuleResolver) Role(ctx context.Context, obj *models.RoleModule) (*models.Role, error) {
+	panic(fmt.Errorf("not implemented: Role - role"))
+}
+
+// Module is the resolver for the module field.
+func (r *roleModuleResolver) Module(ctx context.Context, obj *models.RoleModule) (*models.Module, error) {
+	panic(fmt.Errorf("not implemented: Module - module"))
+}
+
 // Role is the resolver for the role field.
 func (r *userResolver) Role(ctx context.Context, obj *models.User) (*models.Role, error) {
 	return middlewares.GetRole(ctx, obj.RoleId)
@@ -97,9 +143,17 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Role returns RoleResolver implementation.
+func (r *Resolver) Role() RoleResolver { return &roleResolver{r} }
+
+// RoleModule returns RoleModuleResolver implementation.
+func (r *Resolver) RoleModule() RoleModuleResolver { return &roleModuleResolver{r} }
+
 // User returns UserResolver implementation.
 func (r *Resolver) User() UserResolver { return &userResolver{r} }
 
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type roleResolver struct{ *Resolver }
+type roleModuleResolver struct{ *Resolver }
 type userResolver struct{ *Resolver }

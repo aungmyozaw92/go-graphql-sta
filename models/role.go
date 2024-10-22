@@ -74,3 +74,79 @@ func GetQueryPathsFromRole(ctx context.Context, roleId int) (map[string]bool, er
 	}
 	return allowedPaths, nil
 }
+
+func mapRoleModules(ctx context.Context, input []*NewAllowedModule) ([]*RoleModule, error) {
+
+	availabeModuleActions := make(map[int]string, 0) // moduleId:actions
+	modules, err := GetResources[Module](ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	for _, m := range modules {
+		availabeModuleActions[m.ID] = m.Actions
+	}
+
+	var roleModules []*RoleModule
+	for _, permission := range input {
+
+		availableActionsString, ok := availabeModuleActions[permission.ModuleID]
+		if !ok || availableActionsString == "" {
+			return nil, errors.New("module_id not found")
+		}
+		availableActions := extractModuleActions(availableActionsString)
+		inputActions := extractModuleActions(permission.AllowedActions)
+		for _, action := range inputActions {
+			if !slices.Contains(availableActions, action) {
+				return nil, errors.New("invalid module action")
+			}
+		}
+
+		roleModules = append(roleModules, &RoleModule{
+			ModuleId:       permission.ModuleID,
+			AllowedActions: permission.AllowedActions,
+		})
+	}
+	return roleModules, nil
+}
+
+func CreateRole(ctx context.Context, input *NewRole) (*Role, error) {
+
+	// check duplicate
+	if err := utils.ValidateUnique[Role](ctx, "name", input.Name, 0); err != nil {
+		return nil, err
+	}
+	roleModules, err := mapRoleModules(ctx, input.AllowedModules)
+	if err != nil {
+		return nil, err
+	}
+
+	role := Role{
+		Name:        input.Name,
+		RoleModules: roleModules,
+	}
+	db := config.GetDB()
+	// tx := db.Begin()
+	err = db.WithContext(ctx).Create(&role).Error
+	if err != nil {
+		return nil, err
+	}
+	return &role, nil
+}
+
+func GetRole(ctx context.Context, id int) (*Role, error) {
+
+	return GetResource[Role](ctx, id)
+
+}
+
+func GetRoles(ctx context.Context, name *string) ([]*Role, error) {
+
+	results, err := GetResources[Role](ctx, "created_at")
+
+	if err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}

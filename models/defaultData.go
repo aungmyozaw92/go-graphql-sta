@@ -8,6 +8,8 @@ import (
 func GetDefaultModules() map[string]string {
 	defaultModules := map[string]string{
 		"User":    "create;update;delete;read;resetPassword",
+		"Role":  "create;update;delete;read",
+		"Module":  "create;update;delete;read",
 	}
 	return defaultModules
 }

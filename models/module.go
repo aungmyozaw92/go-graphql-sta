@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -157,49 +156,15 @@ func DeleteModule(ctx context.Context, id int) (*Module, error) {
 
 func GetModule(ctx context.Context, id int) (*Module, error) {
 
-	// only admin can access
-	db := config.GetDB()
-	var result Module
+	return GetResource[Module](ctx, id)
 
-	exists, err := utils.GetRedis[Module](id)
-	if err != nil {
-		return nil, err
-	}
-	if exists != nil{
-		// Module found in cache, return it
-		return &result, nil
-	}
-
-	if err = db.WithContext(ctx).First(&result, id).Error; err != nil {
-		return nil, errors.New("module not found")
-	}
-
-	// Cache the module in Redis for future requests
-	if err := utils.StoreRedis[Module](result, id); err != nil {
-		return nil, err
-	}
-
-	return &result, nil
 }
 
 func GetModules(ctx context.Context, name *string) ([]*Module, error) {
-	db := config.GetDB()
-	var results []*Module
 
-	results, err := utils.GetRedisList[Module]()
+	results, err := GetResources[Module](ctx, "name")
+
 	if err != nil {
-		return nil, err
-	}
-	if results != nil{
-		// Module found in cache, return it
-		return results, nil
-	}
-
-	if err := db.WithContext(ctx).Find(&results).Error; err != nil {
-		return results, errors.New("no modules")
-	}
-
-	if err = utils.StoreRedisList[Module](results); err != nil {
 		return nil, err
 	}
 
