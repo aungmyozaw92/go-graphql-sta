@@ -61,8 +61,14 @@ func GetQueryPathsFromRole(ctx context.Context, roleId int) (map[string]bool, er
 				switch action {
 				case "read":
 					allowedPaths["get"+module] = true
-					allowedPaths["get"+module+"s"] = true
 					allowedPaths["paginate"+module] = true
+					// Check if module ends with 'y' to change to plural 'ies'
+					if strings.HasSuffix(module, "y") {
+						allowedPaths["get"+module[:len(module)-1]+"ies"] = true
+					} else {
+						// Just add 's' for general cases
+						allowedPaths["get"+module+"s"] = true
+					}
 				case "update":
 					allowedPaths["update"+module] = true
 					allowedPaths["toggleActive"+module] = true
