@@ -45,3 +45,17 @@ func (obj Unit) RemoveAllRedis() error {
 	}
 	return nil
 }
+
+func (obj Category) RemoveInstanceRedis() error {
+	if err := utils.RemoveRedisItem[Category](obj.ID); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (obj Category) RemoveAllRedis() error {
+	if err := utils.RemoveRedisList[Category](); err != nil {
+		return err
+	}
+	return nil
+}

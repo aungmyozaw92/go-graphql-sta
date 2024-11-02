@@ -12,6 +12,11 @@ import (
 	"github.com/aungmyozaw92/go-graphql/models"
 )
 
+// ParentCategory is the resolver for the parentCategory field.
+func (r *categoryResolver) ParentCategory(ctx context.Context, obj *models.Category) (*models.Category, error) {
+	panic(fmt.Errorf("not implemented: ParentCategory - parentCategory"))
+}
+
 // Register is the resolver for the register field.
 func (r *mutationResolver) Register(ctx context.Context, input models.NewUser) (*models.User, error) {
 	return models.CreateUser(ctx, &input)
@@ -97,6 +102,26 @@ func (r *mutationResolver) ToggleActiveUnit(ctx context.Context, id int, isActiv
 	return models.ToggleActiveUnit(ctx, id, isActive)
 }
 
+// CreateCategory is the resolver for the createCategory field.
+func (r *mutationResolver) CreateCategory(ctx context.Context, input models.NewCategory) (*models.Category, error) {
+	return models.CreateCategory(ctx, &input)
+}
+
+// UpdateCategory is the resolver for the updateCategory field.
+func (r *mutationResolver) UpdateCategory(ctx context.Context, id int, input models.NewCategory) (*models.Category, error) {
+	return models.UpdateCategory(ctx, id, &input)
+}
+
+// DeleteCategory is the resolver for the deleteCategory field.
+func (r *mutationResolver) DeleteCategory(ctx context.Context, id int) (*models.Category, error) {
+	return models.DeleteCategory(ctx, id)
+}
+
+// ToggleActiveCategory is the resolver for the toggleActiveCategory field.
+func (r *mutationResolver) ToggleActiveCategory(ctx context.Context, id int, isActive bool) (*models.Category, error) {
+	return models.ToggleActiveCategory(ctx, id, isActive)
+}
+
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id int) (*models.User, error) {
 	return models.GetUser(ctx, id)
@@ -152,6 +177,21 @@ func (r *queryResolver) PaginateUnit(ctx context.Context, limit *int, after *str
 	return models.PaginateUnit(ctx, limit, after, name)
 }
 
+// GetCategory is the resolver for the getCategory field.
+func (r *queryResolver) GetCategory(ctx context.Context, id int) (*models.Category, error) {
+	return models.GetCategory(ctx, id)
+}
+
+// GetCategories is the resolver for the getCategories field.
+func (r *queryResolver) GetCategories(ctx context.Context, name *string) ([]*models.Category, error) {
+	return models.GetCategories(ctx, name)
+}
+
+// PaginateCategory is the resolver for the paginateCategory field.
+func (r *queryResolver) PaginateCategory(ctx context.Context, limit *int, after *string, name *string, parentCategoryID *int) (*models.CategoriesConnection, error) {
+	return models.PaginateCategory(ctx, limit, after, name, parentCategoryID)
+}
+
 // RoleModules is the resolver for the roleModules field.
 func (r *roleResolver) RoleModules(ctx context.Context, obj *models.Role) ([]*models.RoleModule, error) {
 	panic(fmt.Errorf("not implemented: RoleModules - roleModules"))
@@ -172,6 +212,9 @@ func (r *userResolver) Role(ctx context.Context, obj *models.User) (*models.Role
 	return middlewares.GetRole(ctx, obj.RoleId)
 }
 
+// Category returns CategoryResolver implementation.
+func (r *Resolver) Category() CategoryResolver { return &categoryResolver{r} }
+
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
@@ -187,6 +230,7 @@ func (r *Resolver) RoleModule() RoleModuleResolver { return &roleModuleResolver{
 // User returns UserResolver implementation.
 func (r *Resolver) User() UserResolver { return &userResolver{r} }
 
+type categoryResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roleResolver struct{ *Resolver }

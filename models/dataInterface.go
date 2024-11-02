@@ -17,3 +17,8 @@ func (user User) GetId() int {
 func (unit Unit) GetId() int {
 	return unit.ID
 }
+
+
+func (category Category) GetId() int {
+	return category.ID
+}

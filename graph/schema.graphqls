@@ -149,6 +149,30 @@ input NewUnit {
   precision: Precision!
 }
 
+type Category {
+  id: ID!
+  name: String!
+  parentCategory: Category!
+  isActive: Boolean!
+  createdAt: Time
+  updatedAt: Time
+}
+
+input NewCategory {
+  name: String!
+  parentCategoryId: Int
+}
+
+type CategoriesConnection {
+  edges: [CategoriesEdge!]!
+  pageInfo: PageInfo!
+}
+
+type CategoriesEdge {
+  cursor: String!
+  node: Category
+}
+
 type Query {
   getUser(id: ID!): User! @goField(forceResolver: true) @auth
 
@@ -185,6 +209,16 @@ type Query {
   paginateUnit(limit: Int = 10, after: String, name: String): UnitsConnection
     @goField(forceResolver: true)
     @auth
+
+  # Category
+  getCategory(id: ID!): Category! @goField(forceResolver: true) @auth
+  getCategories(name: String): [Category] @goField(forceResolver: true) @auth
+  paginateCategory(
+    limit: Int = 10
+    after: String
+    name: String
+    parentCategoryId: Int
+  ): CategoriesConnection @goField(forceResolver: true) @auth
 }
 
 type Mutation {
@@ -225,6 +259,18 @@ type Mutation {
     @auth
   deleteUnit(id: ID!): Unit! @goField(forceResolver: true) @auth
   toggleActiveUnit(id: ID!, isActive: Boolean!): Unit!
+    @goField(forceResolver: true)
+    @auth
+
+  #Category
+  createCategory(input: NewCategory!): Category!
+    @goField(forceResolver: true)
+    @auth
+  updateCategory(id: ID!, input: NewCategory!): Category!
+    @goField(forceResolver: true)
+    @auth
+  deleteCategory(id: ID!): Category! @goField(forceResolver: true) @auth
+  toggleActiveCategory(id: ID!, isActive: Boolean!): Category!
     @goField(forceResolver: true)
     @auth
 }
