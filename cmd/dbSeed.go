@@ -36,6 +36,29 @@ var seedingCommand = &cobra.Command{
 	},
 }
 
+var refreshSeedingCommand = &cobra.Command{
+	Use:   "db:refresh-seed",
+	Short: "Clear and re-seed the database with initial data",
+	Long:  `This command will clear the existing data and seed the database with default mock data.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		db := config.GetDB()
+		tx := db.Begin()
+
+		if err := seeder.ClearDatabase(tx); err != nil {
+			tx.Rollback()
+			fmt.Println("Error clearing database:", err)
+			return
+		}
+
+		seeder.SeedDatabase(tx)
+		fmt.Println("Database refreshed and seeded successfully")
+
+		if err := tx.Commit().Error; err != nil {
+			fmt.Println(err)
+		}
+	},
+}
+
 // var freshCommand = &cobra.Command{
 // 	Use:   "fresh:seed",
 // 	Short: "Fresh database tables and seed",
@@ -67,4 +90,5 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(seedingCommand)
+	rootCmd.AddCommand(refreshSeedingCommand)
 }
