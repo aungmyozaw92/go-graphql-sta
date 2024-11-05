@@ -1,3 +1,17 @@
+# Installation
+
+```bash
+$ go mod tidy
+```
+
+## Running the app
+
+```bash
+# development
+$ go run main.go or go run .
+
+```
+
 ## Database Configuration
 
 ```bash
@@ -29,15 +43,13 @@ $ TOKEN_HOUR_LIFESPAN=240
 
 ```
 
+## Storage Configuration
+
 ```bash
 #Storage Service Configuration
 
 #Options: DO_SPACE for Digital Ocean Space, GOOGLE_CLOUD for Google Cloud Service
-```
 
-## Storage Configuration
-
-```bash
 $ STORAGE_SERVICE=GOOGLE_CLOUD or
 $ STORAGE_SERVICE=DO_SPACE
 
@@ -68,16 +80,4 @@ $ GCS_URL=storage.googleapis.com
 $ GORM_LOG=gorm.log
 ```
 
-## Installation
-
-```bash
-$ go mod tidy
-```
-
-## Running the app
-
-```bash
-# development
-$ go run main.go or go run .
-
-```
+#
