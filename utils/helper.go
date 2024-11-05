@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"fmt"
+	"math/rand"
+	"time"
 	"unicode"
 )
 
@@ -46,3 +49,14 @@ func UniqueSlice[T comparable](slice []T) []T {
 }
 
 var CountryCode = "MM"
+
+func GenerateUniqueFilename() string {
+
+	timestamp := time.Now().UnixNano()
+
+	random := rand.Intn(1000)
+
+	uniqueFilename := fmt.Sprintf("%d_%d", timestamp, random)
+
+	return uniqueFilename
+}

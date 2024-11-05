@@ -8,13 +8,14 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/aungmyozaw92/go-graphql/middlewares"
 	"github.com/aungmyozaw92/go-graphql/models"
 )
 
 // ParentCategory is the resolver for the parentCategory field.
 func (r *categoryResolver) ParentCategory(ctx context.Context, obj *models.Category) (*models.Category, error) {
-	panic(fmt.Errorf("not implemented: ParentCategory - parentCategory"))
+	return middlewares.GetCategory(ctx, obj.ParentCategoryId)
 }
 
 // Register is the resolver for the register field.
@@ -122,6 +123,56 @@ func (r *mutationResolver) ToggleActiveCategory(ctx context.Context, id int, isA
 	return models.ToggleActiveCategory(ctx, id, isActive)
 }
 
+// UploadSingleImage is the resolver for the uploadSingleImage field.
+func (r *mutationResolver) UploadSingleImage(ctx context.Context, file graphql.Upload) (*models.UploadResponse, error) {
+	return models.UploadSingleImage(ctx, file)
+}
+
+// UploadMultipleImage is the resolver for the uploadMultipleImage field.
+func (r *mutationResolver) UploadMultipleImage(ctx context.Context, files []*graphql.Upload) ([]*models.UploadResponse, error) {
+	return models.UploadMultipleImages(ctx, files)
+}
+
+// RemoveImage is the resolver for the removeImage field.
+func (r *mutationResolver) RemoveImage(ctx context.Context, imageURL string) (*models.UploadResponse, error) {
+	return models.RemoveImage(ctx, imageURL)
+}
+
+// CreateProduct is the resolver for the createProduct field.
+func (r *mutationResolver) CreateProduct(ctx context.Context, input models.NewProduct) (*models.Product, error) {
+	return models.CreateProduct(ctx, &input)
+}
+
+// UpdateProduct is the resolver for the updateProduct field.
+func (r *mutationResolver) UpdateProduct(ctx context.Context, id int, input models.NewProduct) (*models.Product, error) {
+	panic(fmt.Errorf("not implemented: UpdateProduct - updateProduct"))
+}
+
+// DeleteProduct is the resolver for the deleteProduct field.
+func (r *mutationResolver) DeleteProduct(ctx context.Context, id int) (*models.Product, error) {
+	return models.DeleteProduct(ctx, id)
+}
+
+// ToggleActiveProduct is the resolver for the toggleActiveProduct field.
+func (r *mutationResolver) ToggleActiveProduct(ctx context.Context, id int, isActive bool) (*models.Product, error) {
+	panic(fmt.Errorf("not implemented: ToggleActiveProduct - toggleActiveProduct"))
+}
+
+// Category is the resolver for the category field.
+func (r *productResolver) Category(ctx context.Context, obj *models.Product) (*models.Category, error) {
+	return middlewares.GetCategory(ctx, obj.CategoryId)
+}
+
+// Images is the resolver for the images field.
+func (r *productResolver) Images(ctx context.Context, obj *models.Product) ([]*models.Image, error) {
+	return middlewares.GetImages(ctx, "products", obj.ID)
+}
+
+// Unit is the resolver for the unit field.
+func (r *productResolver) Unit(ctx context.Context, obj *models.Product) (*models.Unit, error) {
+	return middlewares.GetUnit(ctx, obj.UnitId)
+}
+
 // GetUser is the resolver for the getUser field.
 func (r *queryResolver) GetUser(ctx context.Context, id int) (*models.User, error) {
 	return models.GetUser(ctx, id)
@@ -192,6 +243,21 @@ func (r *queryResolver) PaginateCategory(ctx context.Context, limit *int, after 
 	return models.PaginateCategory(ctx, limit, after, name, parentCategoryID)
 }
 
+// GetProduct is the resolver for the getProduct field.
+func (r *queryResolver) GetProduct(ctx context.Context, id int) (*models.Product, error) {
+	return models.GetProduct(ctx, id)
+}
+
+// PaginateProduct is the resolver for the paginateProduct field.
+func (r *queryResolver) PaginateProduct(ctx context.Context, limit *int, after *string, name *string, sku *string) (*models.ProductsConnection, error) {
+	panic(fmt.Errorf("not implemented: PaginateProduct - paginateProduct"))
+}
+
+// GetProducts is the resolver for the getProducts field.
+func (r *queryResolver) GetProducts(ctx context.Context, name *string) ([]*models.Product, error) {
+	return models.GetProducts(ctx, name)
+}
+
 // RoleModules is the resolver for the roleModules field.
 func (r *roleResolver) RoleModules(ctx context.Context, obj *models.Role) ([]*models.RoleModule, error) {
 	panic(fmt.Errorf("not implemented: RoleModules - roleModules"))
@@ -218,6 +284,9 @@ func (r *Resolver) Category() CategoryResolver { return &categoryResolver{r} }
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
+// Product returns ProductResolver implementation.
+func (r *Resolver) Product() ProductResolver { return &productResolver{r} }
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
@@ -232,6 +301,7 @@ func (r *Resolver) User() UserResolver { return &userResolver{r} }
 
 type categoryResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
+type productResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type roleResolver struct{ *Resolver }
 type roleModuleResolver struct{ *Resolver }

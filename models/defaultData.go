@@ -12,6 +12,8 @@ func GetDefaultModules() map[string]string {
 		"Module":  	 "create;update;delete;read",
 		"Unit":  	 "create;update;delete;read;toggleActive",
 		"Category":  "create;update;delete;read;toggleActive",
+		"Product":   "create;update;delete;read;toggleActive",
+		"Image":  	 "upload;remove",
 	}
 	return defaultModules
 }

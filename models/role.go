@@ -72,6 +72,9 @@ func GetQueryPathsFromRole(ctx context.Context, roleId int) (map[string]bool, er
 				case "update":
 					allowedPaths["update"+module] = true
 					allowedPaths["toggleActive"+module] = true
+				case "upload":
+    				allowedPaths["uploadSingle"+module] = true
+    				allowedPaths["uploadMultiple"+module] = true
 				default:
 					action = utils.LowercaseFirst(action)
 					allowedPaths[action+module] = true

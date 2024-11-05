@@ -14,9 +14,15 @@ scalar Time
 scalar UUID
 scalar Decimal
 scalar Precision
+scalar Upload
 
 type GeneratedDummy {
   name: String!
+}
+
+type UploadResponse {
+  image_url: String!
+  thumbnail_url: String
 }
 
 type PageInfo {
@@ -173,6 +179,63 @@ type CategoriesEdge {
   node: Category
 }
 
+type Image {
+  id: ID!
+  imageUrl: String!
+  thumbnailUrl: String!
+  referenceType: String
+  referenceID: Int
+}
+
+input NewImage {
+  id: ID
+  isDeletedItem: Boolean
+  imageUrl: String!
+  thumbnailUrl: String!
+}
+
+type Product {
+  id: ID!
+  name: String!
+  description: String
+  sku: String
+  category: Category! @goField(forceResolver: true)
+  images: [Image] @goField(forceResolver: true)
+  unit: Unit! @goField(forceResolver: true)
+  supplierId: Int
+  barcode: String
+  salesPrice: Decimal!
+  purchasePrice: Decimal!
+  isActive: Boolean!
+  isBatchTracking: Boolean
+  createdAt: Time
+  updatedAt: Time
+}
+
+input NewProduct {
+  name: String!
+  description: String
+  sku: String
+  categoryId: Int
+  images: [NewImage]
+  unitId: Int!
+  supplierId: Int
+  barcode: String
+  salesPrice: Decimal
+  purchasePrice: Decimal
+  isBatchTracking: Boolean
+}
+
+type ProductsConnection {
+  edges: [ProductsEdge!]!
+  pageInfo: PageInfo!
+}
+
+type ProductsEdge {
+  cursor: String!
+  node: Product
+}
+
 type Query {
   getUser(id: ID!): User! @goField(forceResolver: true) @auth
 
@@ -219,6 +282,16 @@ type Query {
     name: String
     parentCategoryId: Int
   ): CategoriesConnection @goField(forceResolver: true) @auth
+
+  # Product
+  getProduct(id: ID!): Product! @goField(forceResolver: true) @auth
+  paginateProduct(
+    limit: Int = 10
+    after: String
+    name: String
+    sku: String
+  ): ProductsConnection @goField(forceResolver: true) @auth
+  getProducts(name: String): [Product] @goField(forceResolver: true) @auth
 }
 
 type Mutation {
@@ -271,6 +344,31 @@ type Mutation {
     @auth
   deleteCategory(id: ID!): Category! @goField(forceResolver: true) @auth
   toggleActiveCategory(id: ID!, isActive: Boolean!): Category!
+    @goField(forceResolver: true)
+    @auth
+
+  # Upload Image
+  uploadSingleImage(file: Upload!): UploadResponse!
+    @goField(forceResolver: true)
+    @auth
+
+  uploadMultipleImage(files: [Upload!]!): [UploadResponse]
+    @goField(forceResolver: true)
+    @auth
+
+  removeImage(imageUrl: String!): UploadResponse!
+    @goField(forceResolver: true)
+    @auth
+
+  #Product
+  createProduct(input: NewProduct!): Product!
+    @goField(forceResolver: true)
+    @auth
+  updateProduct(id: ID!, input: NewProduct!): Product!
+    @goField(forceResolver: true)
+    @auth
+  deleteProduct(id: ID!): Product! @goField(forceResolver: true) @auth
+  toggleActiveProduct(id: ID!, isActive: Boolean!): Product!
     @goField(forceResolver: true)
     @auth
 }

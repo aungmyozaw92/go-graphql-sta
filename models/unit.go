@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/aungmyozaw92/go-graphql/config"
@@ -120,14 +121,14 @@ func DeleteUnit(ctx context.Context, id int) (*Unit, error) {
 	}
 
 	// don't delete if Unit is used by  or  variant
-	// count, err := utils.ResourceCountWhere[Product](ctx, businessId, "unit_id = ?", id)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// if count > 0 {
-	// 	return nil, errors.New("used by product")
-	// }
-	// count, err = utils.ResourceCountWhere[ProductVariant](ctx, businessId, "unit_id = ?", id)
+	count, err := utils.ResourceCountWhere[Product](ctx, "unit_id = ?", id)
+	if err != nil {
+		return nil, err
+	}
+	if count > 0 {
+		return nil, errors.New("used by product")
+	}
+	// count, err = utils.ResourceCountWhere[ProductVariant](ctx, "unit_id = ?", id)
 	// if err != nil {
 	// 	return nil, err
 	// }

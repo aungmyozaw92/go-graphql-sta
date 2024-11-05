@@ -20,8 +20,11 @@ const (
 
 // Loaders wrap your data loaders to inject via middleware
 type Loaders struct {
-	UserLoader *dataloader.Loader[int, *models.User]
-	RoleLoader *dataloader.Loader[int, *models.Role]
+	UserLoader 				*dataloader.Loader[int, *models.User]
+	RoleLoader 				*dataloader.Loader[int, *models.Role]
+	CategoryLoader 			*dataloader.Loader[int, *models.Category]
+	UnitLoader 				*dataloader.Loader[int, *models.Unit]
+	ProductImageLoader      *dataloader.Loader[int, []*models.Image]
 }
 
 // NewLoaders instantiates data loaders for the middleware
@@ -29,10 +32,18 @@ func NewLoaders(conn *gorm.DB) *Loaders {
 	// define the data loader
 	ur := &userReader{db: conn}
 	rr := &roleReader{db: conn}
+	cr := &categoryReader{db: conn}
+	unitr := &unitReader{db: conn}
+	pImager := &imageReader{db: conn, referenceType: "products"}
 
 	return &Loaders{
 		UserLoader: dataloader.NewBatchedLoader(ur.getUsers, dataloader.WithWait[int, *models.User](time.Millisecond)),
 		RoleLoader: dataloader.NewBatchedLoader(rr.getRoles, dataloader.WithWait[int, *models.Role](time.Millisecond)),
+		CategoryLoader: dataloader.NewBatchedLoader(cr.getCategories, dataloader.WithWait[int, *models.Category](time.Millisecond)),
+		UnitLoader: dataloader.NewBatchedLoader(unitr.getUnits, dataloader.WithWait[int, *models.Unit](time.Millisecond)),
+		// ProductImageLoader: dataloader.NewBatchedLoader(pImager.GetImages, dataloader.WithWait[int, *models.Image](time.Millisecond)),
+		ProductImageLoader: dataloader.NewBatchedLoader(pImager.GetImages, dataloader.WithWait[int, []*models.Image](time.Millisecond)),
+
 	}
 }
 
@@ -66,4 +77,20 @@ func handleError[T any](count int, err error) []*dataloader.Result[T] {
 		results[i] = &dataloader.Result[T]{Error: err}
 	}
 	return results
+}
+
+// T must be struct
+// each id has many related results
+func generateLoaderArrayResults[T models.RelatedData](results []T, referenceIds []int) (loaderResults []*dataloader.Result[[]*T]) {
+	resultMap := make(map[int][]*T)
+	for _, result := range results {
+		// creating a new variable every turn, to avoid pointing to the adddress of result
+		copy := result
+		resultMap[result.GetReferenceId()] = append(resultMap[result.GetReferenceId()], &copy)
+	}
+	for _, id := range referenceIds {
+		resultArray := resultMap[id]
+		loaderResults = append(loaderResults, &dataloader.Result[[]*T]{Data: resultArray})
+	}
+	return loaderResults
 }

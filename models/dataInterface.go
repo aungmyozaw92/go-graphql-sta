@@ -22,3 +22,17 @@ func (unit Unit) GetId() int {
 func (category Category) GetId() int {
 	return category.ID
 }
+
+
+func (p Product) GetId() int {
+	return p.ID
+}
+
+// loader loading more than one model by one id
+type RelatedData interface {
+	GetReferenceId() int
+}
+
+func (i Image) GetReferenceId() int {
+	return i.ReferenceID
+}
