@@ -39,6 +39,8 @@ type UploadResponse struct {
 	ThumbnailUrl string `json:"thumbnail_url"`
 }
 
+var storageService = os.Getenv("STORAGE_SERVICE")
+
 func mapNewImages(imageInput []*NewImage, referenceType string, referenceId int) ([]*Image, error) {
 
 	var images []*Image
@@ -56,16 +58,29 @@ func mapNewImages(imageInput []*NewImage, referenceType string, referenceId int)
 
 // map newImage to Image, for db.Create(&image)
 func (input NewImage) MapInput(referenceType string, referenceId int) (*Image, error) {
-	// if err := utils.CheckImageExistInCloud(input.ImageUrl); err != nil {
-	if err := utils.CheckImageExistInGCS(input.ImageUrl); err != nil {
+	// storageService := os.Getenv("STORAGE_SERVICE")
+
+	// Determine the correct check function based on storage service
+	var checkFunc func(string) error
+	switch storageService {
+	case "GOOGLE_CLOUD":
+		checkFunc = utils.CheckImageExistInGCS
+	case "DO_SPACE":
+		checkFunc = utils.CheckImageExistInSpace
+	default:
+		return nil, fmt.Errorf("unsupported storage service: %s", storageService)
+	}
+
+	// Check both image URLs using the chosen function
+	if err := checkFunc(input.ImageUrl); err != nil {
 		fmt.Println("Error checking image existence:", err)
 		return nil, err
 	}
-	// if err := utils.CheckImageExistInCloud(input.ThumbnailUrl); err != nil {
-	if err := utils.CheckImageExistInGCS(input.ThumbnailUrl); err != nil {
-		fmt.Println("Error checking thumnail existence:", err)
+	if err := checkFunc(input.ThumbnailUrl); err != nil {
+		fmt.Println("Error checking thumbnail existence:", err)
 		return nil, err
 	}
+
 	return &Image{
 		ReferenceType: referenceType,
 		ReferenceID:   referenceId,
@@ -138,10 +153,19 @@ func UploadImage(ctx context.Context, file graphql.Upload) (string, string, erro
 	thumbnailImageObjectURL := filepath.Join(storagePath, "thumbnails", uniqueFilename)
 
 	// Save the original image to Minio
-	// err = utils.SaveImageToSpaces(originalImageObjectURL, imageData)
-	err = utils.SaveImageToGCS(originalImageObjectURL, imageData)
-	if err != nil {
-		return "", "", err
+	if storageService == "GOOGLE_CLOUD" {
+		// err = utils.SaveImageToSpaces(originalImageObjectURL, imageData)
+		err = utils.SaveImageToGCS(originalImageObjectURL, imageData)
+		if err != nil {
+			return "", "", err
+		}
+	} else if storageService == "DO_SPACE" {
+		err = utils.SaveImageToSpaces(originalImageObjectURL, imageData)
+		if err != nil {
+			return "", "", err
+		}
+	} else {
+		return "", "", fmt.Errorf("unsupported storage service: %s", storageService)
 	}
 
 	// Generate and save the thumbnail
@@ -154,10 +178,20 @@ func UploadImage(ctx context.Context, file graphql.Upload) (string, string, erro
 	thumbnailImageData := base64.StdEncoding.EncodeToString(thumbnailData)
 
 	// Save the thumbnail to Minio
-	// err = utils.SaveImageToSpaces(thumbnailImageObjectURL, thumbnailImageData)
-	err = utils.SaveImageToGCS(thumbnailImageObjectURL, thumbnailImageData)
-	if err != nil {
-		return "", "", err
+
+	if storageService == "GOOGLE_CLOUD" {
+		// err = utils.SaveImageToSpaces(thumbnailImageObjectURL, thumbnailImageData)
+		err = utils.SaveImageToGCS(thumbnailImageObjectURL, thumbnailImageData)
+		if err != nil {
+			return "", "", err
+		}
+	} else if storageService == "DO_SPACE" {
+		err = utils.SaveImageToSpaces(thumbnailImageObjectURL, thumbnailImageData)
+		if err != nil {
+			return "", "", err
+		}
+	} else {
+		return "", "", fmt.Errorf("unsupported storage service: %s", storageService)
 	}
 
 	// Construct URLs for both original and thumbnail images
@@ -190,7 +224,14 @@ func generateThumbnail(originalData []byte) ([]byte, error) {
 
 func getCloudURL(objectName string) string {
 	// return "https://" + os.Getenv("SP_BUCKET") + "." + os.Getenv("SP_URL") + "/" + objectName
-	return "https://" + os.Getenv("GCS_URL") + "/" + os.Getenv("GCS_BUCKET") + "/" + objectName
+	// storageService := os.Getenv("STORAGE_SERVICE")
+	if storageService == "GOOGLE_CLOUD" {
+		return "https://" + os.Getenv("GCS_URL") + "/" + os.Getenv("GCS_BUCKET") + "/" + objectName
+	} else if storageService == "DO_SPACE" {
+		return "https://" + os.Getenv("SP_BUCKET") + "." + os.Getenv("SP_URL") + "/" + objectName
+	} else {
+		return ""
+	}
 }
 
 // delete image,
@@ -221,19 +262,34 @@ func RemoveImage(ctx context.Context, fullUrl string) (*UploadResponse, error) {
 
 	// remove image + thumbnail from cloud
 	// remove image
-	// if err := utils.DeleteImageFromSpaces(objectName); err != nil {
-	if err := utils.DeleteImageFromGCS(objectName); err != nil {
-		return nil, err
+	if storageService == "GOOGLE_CLOUD" {
+		if err := utils.DeleteImageFromGCS(objectName); err != nil {
+			return nil, err
+		}
+	} else if storageService == "DO_SPACE" {
+		if err := utils.DeleteImageFromSpaces(objectName); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("unsupported storage service: %s", storageService)
 	}
 	storagePath := strings.Split(objectName, "/")[0]
 	filename := strings.Split(objectName, "/")[1]
 	// remove thumbnail
 	thumbnailObjectName := filepath.Join(storagePath, "thumbnails", filename)
-	// if err := utils.DeleteImageFromSpaces(thumbnailObjectName); err != nil {
-	if err := utils.DeleteImageFromGCS(thumbnailObjectName); err != nil {
+
+	if storageService == "GOOGLE_CLOUD" {
+		if err := utils.DeleteImageFromGCS(thumbnailObjectName); err != nil {
 		return nil, err
 	}
-
+	} else if storageService == "DO_SPACE" {
+		if err := utils.DeleteImageFromSpaces(thumbnailObjectName); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("unsupported storage service: %s", storageService)
+	}
+	
 	return &UploadResponse{
 		ImageUrl:     getCloudURL(objectName),
 		ThumbnailUrl: getCloudURL(thumbnailObjectName),
@@ -242,7 +298,16 @@ func RemoveImage(ctx context.Context, fullUrl string) (*UploadResponse, error) {
 
 func extractObjectName(cloudUrl string) string {
 	// baseUrl := "https://" + os.Getenv("SP_BUCKET") + "." + os.Getenv("SP_URL") + "/"
-	baseUrl := "https://" + os.Getenv("GCS_URL") + "/" + os.Getenv("GCS_BUCKET") + "/"
+	baseUrl := ""
+	// storageService := os.Getenv("STORAGE_SERVICE")
+	if storageService == "GOOGLE_CLOUD" {
+		baseUrl = "https://" + os.Getenv("GCS_URL") + "/" + os.Getenv("GCS_BUCKET") + "/"
+	} else if storageService == "DO_SPACE" {
+		baseUrl = "https://" + os.Getenv("SP_BUCKET") + "." + os.Getenv("SP_URL") + "/"
+	} else {
+		baseUrl = ""
+	}
+
 	objectName, found := strings.CutPrefix(cloudUrl, baseUrl)
 	if !found {
 		return ""
@@ -256,13 +321,22 @@ func (img *Image) Delete(tx *gorm.DB, ctx context.Context) error {
 	if err := tx.WithContext(ctx).Delete(&img).Error; err != nil {
 		return err
 	}
-	// if err := utils.DeleteImageFromSpaces(extractObjectName(img.ImageUrl)); err != nil {
-	if err := utils.DeleteImageFromGCS(extractObjectName(img.ImageUrl)); err != nil {
-		return err
+	// storageService := os.Getenv("STORAGE_SERVICE")
+	if storageService == "GOOGLE_CLOUD" {
+		if err := utils.DeleteImageFromGCS(extractObjectName(img.ImageUrl)); err != nil {
+			return err
+		}
+		if err := utils.DeleteImageFromGCS(extractObjectName(img.ThumbnailUrl)); err != nil {
+			return err
+		}
+	} else if storageService == "DO_SPACE" {
+		if err := utils.DeleteImageFromSpaces(extractObjectName(img.ImageUrl)); err != nil {
+			return err
+		}
+		if err := utils.DeleteImageFromSpaces(extractObjectName(img.ThumbnailUrl)); err != nil {
+			return err
+		}
 	}
-	// if err := utils.DeleteImageFromSpaces(extractObjectName(img.ThumbnailUrl)); err != nil {
-	if err := utils.DeleteImageFromGCS(extractObjectName(img.ThumbnailUrl)); err != nil {
-		return err
-	}
+	
 	return nil
 }
