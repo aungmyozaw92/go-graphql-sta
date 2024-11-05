@@ -1,57 +1,46 @@
-Please add .env
+# Database Configuration
 
 DB_HOST=127.0.0.1
-
 DB_USER=
-
 DB_PASSWORD=
-
 DB_NAME=
-
 DB_PORT=
 
-REDIS_ADDRESS=127.0.0.1:6379
+# Redis Configuration
 
+REDIS_ADDRESS=127.0.0.1:6379
 CACHE_LIFESPAN=4
 
-API_PORT_2=8080
+# API Configuration
 
-API_SECRET=your secret key
-
+API_PORT=8080
+API_SECRET=your_secret_key
 TOKEN_HOUR_LIFESPAN=240
 
-STORAGE_SERVICE=DO_SPACE # for digital ocean space
+# Storage Service Configuration
 
-if you use Digital Ocean's space ,
+# Options: DO_SPACE for Digital Ocean Space, GOOGLE_CLOUD for Google Cloud Service
 
-please add SP_ACCESS_KEY_ID,SP_SECRET_ACCESS_KEY, SP_DEFAULT_REGION, SP_BUCKET and SP_URL.
+STORAGE_SERVICE=DO_SPACE
+
+# Digital Ocean Space Config
 
 SP_ACCESS_KEY_ID=
-
 SP_SECRET_ACCESS_KEY=
-
 SP_DEFAULT_REGION=
-
 SP_BUCKET=
-
 SP_URL=
 
-or
-
-STORAGE_SERVICE=GOOGLE_CLOUD # for goocle cloud service
-
-if you use Google Cloud ,
-
-please add GOOGLE_CLOUD_CREDENTIALS,GCS_BUCKET and GCS_URL.
+# Google Cloud Service Config
 
 GOOGLE_CLOUD_CREDENTIALS='{
-
-add your google cloud service credentials
-
+"type": "service_account",
+"project_id": "your_project_id",
+...
 }'
-
-GCS_BUCKET=add your google cloud bucket
-
+GCS_BUCKET=your_gcs_bucket
 GCS_URL=storage.googleapis.com
+
+# GORM Logging
 
 GORM_LOG=gorm.log
